@@ -1,0 +1,33 @@
+/*
+ *  FILE: modbus_port.c
+ *
+ *  Created on: 2020/2/19
+ *
+ *         Author: aron66
+ *
+ *  DESCRIPTION:--
+ */
+#ifdef __cplusplus //use C compiler
+extern "C" {
+#endif
+#include "modbus_port.h" 
+    
+static UART_HandleTypeDef *huart;
+/*
+ * 串口参数设置
+ * */
+volatile uint16_t uart_mode = REC_NOT_THROUGH_MODE;//配置独立模式    
+    
+/*移植ms延时*/    
+void modbusDelay(uint32_t Delayms) 
+{
+    osDelay(Delayms);
+}
+
+int ModbusUsart_tx(int fd,unsigned char* msg , int len)
+{
+
+}
+#ifdef __cplusplus //end extern c
+}
+#endif
