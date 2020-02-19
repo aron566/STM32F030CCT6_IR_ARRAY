@@ -51,12 +51,24 @@
 osThreadId RTCHandle;
 uint32_t RTCTaskBuffer[ 128 ];
 osStaticThreadDef_t RTCTaskControlBlock;
-osThreadId ModbusMasterHandle;
-uint32_t ModbusMasterBuffer[ 128 ];
-osStaticThreadDef_t ModbusMasterControlBlock;
-osThreadId ModbusSlaveHandle;
-uint32_t ModbusSlaveBuffer[ 128 ];
-osStaticThreadDef_t ModbusSlaveControlBlock;
+osThreadId IR_Task_1Handle;
+uint32_t IR_Task_1Buffer[ 128 ];
+osStaticThreadDef_t IR_Task_1ControlBlock;
+osThreadId IR_Task_2Handle;
+uint32_t IR_Task_2Buffer[ 128 ];
+osStaticThreadDef_t IR_Task_2ControlBlock;
+osThreadId IR_Task_3TaskHandle;
+uint32_t IR_Task_3TaskBuffer[ 128 ];
+osStaticThreadDef_t IR_Task_3TaskControlBlock;
+osThreadId IR_Task_4TaskHandle;
+uint32_t IR_Task_4TaskBuffer[ 128 ];
+osStaticThreadDef_t IR_Task_4Task1TaskControlBlock;
+osThreadId PcConectTaskHandle;
+uint32_t PcConectTaskBuffer[ 128 ];
+osStaticThreadDef_t PcConectTaskControlBlock;
+osThreadId DisplayTaskHandle;
+uint32_t DisplayTaskBuffer[ 128 ];
+osStaticThreadDef_t DisplayTaskControlBlock;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -64,8 +76,12 @@ osStaticThreadDef_t ModbusSlaveControlBlock;
 /* USER CODE END FunctionPrototypes */
 
 void StartRTCTask(void const * argument);
-void StartModbusMasterTask(void const * argument);
-void StartModbusSlaveTask(void const * argument);
+void StartIR_Task_1Task(void const * argument);
+void StartIR_Task_2Task(void const * argument);
+void StartIR_Task_3Task(void const * argument);
+void StartIR_Task_4Task(void const * argument);
+void StartPcConectTask(void const * argument);
+void StartDisplayTask(void const * argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -116,13 +132,29 @@ void MX_FREERTOS_Init(void) {
   osThreadStaticDef(RTC, StartRTCTask, osPriorityIdle, 0, 128, RTCTaskBuffer, &RTCTaskControlBlock);
   RTCHandle = osThreadCreate(osThread(RTC), NULL);
 
-  /* definition and creation of ModbusMaster */
-  osThreadStaticDef(ModbusMaster, StartModbusMasterTask, osPriorityNormal, 0, 128, ModbusMasterBuffer, &ModbusMasterControlBlock);
-  ModbusMasterHandle = osThreadCreate(osThread(ModbusMaster), NULL);
+  /* definition and creation of IR_Task_1 */
+  osThreadStaticDef(IR_Task_1, StartIR_Task_1Task, osPriorityNormal, 0, 128, IR_Task_1Buffer, &IR_Task_1ControlBlock);
+  IR_Task_1Handle = osThreadCreate(osThread(IR_Task_1), NULL);
 
-  /* definition and creation of ModbusSlave */
-  osThreadStaticDef(ModbusSlave, StartModbusSlaveTask, osPriorityNormal, 0, 128, ModbusSlaveBuffer, &ModbusSlaveControlBlock);
-  ModbusSlaveHandle = osThreadCreate(osThread(ModbusSlave), NULL);
+  /* definition and creation of IR_Task_2 */
+  osThreadStaticDef(IR_Task_2, StartIR_Task_2Task, osPriorityNormal, 0, 128, IR_Task_2Buffer, &IR_Task_2ControlBlock);
+  IR_Task_2Handle = osThreadCreate(osThread(IR_Task_2), NULL);
+
+  /* definition and creation of IR_Task_3Task */
+  osThreadStaticDef(IR_Task_3Task, StartIR_Task_3Task, osPriorityNormal, 0, 128, IR_Task_3TaskBuffer, &IR_Task_3TaskControlBlock);
+  IR_Task_3TaskHandle = osThreadCreate(osThread(IR_Task_3Task), NULL);
+
+  /* definition and creation of IR_Task_4Task */
+  osThreadStaticDef(IR_Task_4Task, StartIR_Task_4Task, osPriorityNormal, 0, 128, IR_Task_4TaskBuffer, &IR_Task_4Task1TaskControlBlock);
+  IR_Task_4TaskHandle = osThreadCreate(osThread(IR_Task_4Task), NULL);
+
+  /* definition and creation of PcConectTask */
+  osThreadStaticDef(PcConectTask, StartPcConectTask, osPriorityNormal, 0, 128, PcConectTaskBuffer, &PcConectTaskControlBlock);
+  PcConectTaskHandle = osThreadCreate(osThread(PcConectTask), NULL);
+
+  /* definition and creation of DisplayTask */
+  osThreadStaticDef(DisplayTask, StartDisplayTask, osPriorityLow, 0, 128, DisplayTaskBuffer, &DisplayTaskControlBlock);
+  DisplayTaskHandle = osThreadCreate(osThread(DisplayTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -148,40 +180,112 @@ void StartRTCTask(void const * argument)
   /* USER CODE END StartRTCTask */
 }
 
-/* USER CODE BEGIN Header_StartModbusMasterTask */
+/* USER CODE BEGIN Header_StartIR_Task_1Task */
 /**
-* @brief Function implementing the ModbusMaster thread.
+* @brief Function implementing the IR_Task_1 thread.
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_StartModbusMasterTask */
-void StartModbusMasterTask(void const * argument)
+/* USER CODE END Header_StartIR_Task_1Task */
+void StartIR_Task_1Task(void const * argument)
 {
-  /* USER CODE BEGIN StartModbusMasterTask */
+  /* USER CODE BEGIN StartIR_Task_1Task */
   /* Infinite loop */
   for(;;)
   {
     osDelay(1);
   }
-  /* USER CODE END StartModbusMasterTask */
+  /* USER CODE END StartIR_Task_1Task */
 }
 
-/* USER CODE BEGIN Header_StartModbusSlaveTask */
+/* USER CODE BEGIN Header_StartIR_Task_2Task */
 /**
-* @brief Function implementing the ModbusSlave thread.
+* @brief Function implementing the IR_Task_2 thread.
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_StartModbusSlaveTask */
-void StartModbusSlaveTask(void const * argument)
+/* USER CODE END Header_StartIR_Task_2Task */
+void StartIR_Task_2Task(void const * argument)
 {
-  /* USER CODE BEGIN StartModbusSlaveTask */
+  /* USER CODE BEGIN StartIR_Task_2Task */
   /* Infinite loop */
   for(;;)
   {
     osDelay(1);
   }
-  /* USER CODE END StartModbusSlaveTask */
+  /* USER CODE END StartIR_Task_2Task */
+}
+
+/* USER CODE BEGIN Header_StartIR_Task_3Task */
+/**
+* @brief Function implementing the IR_Task_3Task thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartIR_Task_3Task */
+void StartIR_Task_3Task(void const * argument)
+{
+  /* USER CODE BEGIN StartIR_Task_3Task */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END StartIR_Task_3Task */
+}
+
+/* USER CODE BEGIN Header_StartIR_Task_4Task */
+/**
+* @brief Function implementing the IR_Task_4Task thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartIR_Task_4Task */
+void StartIR_Task_4Task(void const * argument)
+{
+  /* USER CODE BEGIN StartIR_Task_4Task */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END StartIR_Task_4Task */
+}
+
+/* USER CODE BEGIN Header_StartPcConectTask */
+/**
+* @brief Function implementing the PcConectTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartPcConectTask */
+void StartPcConectTask(void const * argument)
+{
+  /* USER CODE BEGIN StartPcConectTask */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END StartPcConectTask */
+}
+
+/* USER CODE BEGIN Header_StartDisplayTask */
+/**
+* @brief Function implementing the DisplayTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartDisplayTask */
+void StartDisplayTask(void const * argument)
+{
+  /* USER CODE BEGIN StartDisplayTask */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END StartDisplayTask */
 }
 
 /* Private application code --------------------------------------------------*/

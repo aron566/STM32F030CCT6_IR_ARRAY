@@ -14,6 +14,7 @@ extern "C" {
 
 #include "CircularQueue.h"
 #include <string.h>
+#include <stdlib.h>
 #if USE_LINUX_SYSTEM
 #include <sys/types.h>
 #endif
@@ -55,7 +56,7 @@ bool CQ_isEmpty(CQ_handleTypeDef *CircularQueue)
         return FALSE;
 }
 
-/*环形缓冲区判断是否为满：！有问题！
+/*环形缓冲区判断是否为满
 *CircularQueue作为环形冲区的记录器，是个结构体
 *若 【已】写入数据与，减去 【已】读取数据长度 = 剩余空间 剩余空间==总长度  判断满
 */

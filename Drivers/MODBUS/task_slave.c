@@ -12,11 +12,17 @@ extern "C" {
 #endif
     
 #include "modbus_type.h"
-#include "CircularQueue.h"/*包含modbus通讯帧存储*/    
+#include "modbus_reg.h"
+#include "Utilities.h"/*CRC 及 获取端口号*/
+    
+/*透传模式 打包数据--待转发*/
+static void broker_rw_message(int channel,uint8_t *ptr,uint16_t msglen);
 
+/*转发数据*/
 static void broker_send_message_to_slave(uint8_t msg_device_addr ,uint8_t* msg ,int len);
 
-
+/*本机作为slave独立解析主站数据包 --响应 控制和读取操作*/
+static void rec_master_data(modbus_master_rec_t *rec_struct ,uint16_t reg_begin_addr ,uint16_t len);
 /* modbus解码的LOOP
  *
  * 接收master包并解析【本机作为slave】
@@ -26,7 +32,7 @@ static void broker_send_message_to_slave(uint8_t msg_device_addr ,uint8_t* msg ,
  * 缓冲区Uart【1】_Send_slave_BUFF
  * */
 void* modbus_slave_decode_start(void* data) {
-	circular_buffer *cb = (circular_buffer *) (data);
+	CQ_handleTypeDef *cb = (CQ_handleTypeDef *) (data);
 	uint8_t msg_device_addr ,msg_cmd ,data_len;
 	uint16_t msg_len = 0;
 	uint32_t read_offset = 0;
@@ -37,19 +43,19 @@ void* modbus_slave_decode_start(void* data) {
 	modbus_master_rec_t rec_data_temp;
 	while (1) {
 #if USE_TCP_SEQUENS_NUM
-		if(cb_bytes_can_read(cb) >= 9)
+		if(CQ_getLength(cb) >= 9)
 		{
 			//解析序列号
-			msg_sequens_num = *(((uint8_t*)cb->ptr + (cb->read_offset%cb->count)));
-			read_offset = ((cb->read_offset + 1)%cb->count);
+			msg_sequens_num = *(((uint8_t*)cb->dataBufer + (cb->exit%cb->size)));
+			read_offset = ((cb->exit + 1)%cb->size);
 			msg_sequens_num <<= 8;
-			msg_sequens_num |= *(((uint8_t*)cb->ptr + read_offset));
+			msg_sequens_num |= *(((uint8_t*)cb->dataBufer + read_offset));
 			//解析地址
-			read_offset = ((cb->read_offset + 2)%cb->count);
-			msg_device_addr = *(((uint8_t*)cb->ptr + read_offset)); //第3个字节为设备地址
+			read_offset = ((cb->exit + 2)%cb->size);
+			msg_device_addr = *(((uint8_t*)cb->dataBufer + read_offset)); //第3个字节为设备地址
 			//解析命令
-			read_offset = ((cb->read_offset + 3)%cb->count);
-			msg_cmd = *(((uint8_t*)cb->ptr + read_offset)); //第4个字节为功能码
+			read_offset = ((cb->exit + 3)%cb->size);
+			msg_cmd = *(((uint8_t*)cb->dataBufer + read_offset)); //第4个字节为功能码
 			rec_data_temp.cmd = msg_cmd;
 
 			switch(msg_cmd)
@@ -57,7 +63,7 @@ void* modbus_slave_decode_start(void* data) {
 				case 0x03:
 					msg_len = 6;//不含CRC字节数
 					//判断数据长度 + 消息
-					if(cb_bytes_can_read(cb) >= (uint32_t)(msg_len+2+2))
+					if(CQ_getLength(cb) >= (uint32_t)(msg_len+2+2))
 					{
 						CQ_get_buff_Data(cb, tmp_buff, msg_len+2+2);
 						if(return_check_crc(tmp_buff+2 ,msg_len))
@@ -69,7 +75,7 @@ void* modbus_slave_decode_start(void* data) {
 							reg_len = tmp_buff[4+2];
 							reg_len <<= 8;
 							reg_len |= tmp_buff[5+2];
-							if(reg_start_addr >= SET_UART_MODE && (reg_start_addr+reg_len) < MODBUS_PROTOL)
+							if(reg_start_addr >= IR_MATRIX_GRAPH_START && (reg_start_addr+reg_len) < IR_MATRIX_GRAPH_END)
 							{
 								goto _read_self_par;
 							}
@@ -111,12 +117,12 @@ void* modbus_slave_decode_start(void* data) {
 					break;
 				case 0x13:
 					//解析需读取的寄存器数目--非连续
-					read_offset = ((cb->read_offset + 4)%cb->count);
-					reg_len = (*((uint8_t*)cb->ptr + read_offset));
+					read_offset = ((cb->exit + 4)%cb->size);
+					reg_len = (*((uint8_t*)cb->dataBufer + read_offset));
 					//用于CRC校验数据长度
 					msg_len = 3+(reg_len*2)+3;
 					//判断数据长度
-					if(cb_bytes_can_read(cb) >= (uint32_t)(msg_len+2+2))
+					if(CQ_getLength(cb) >= (uint32_t)(msg_len+2+2))
 					{
 						CQ_get_buff_Data(cb ,tmp_buff ,msg_len+2+2);
 						//CRC校验
@@ -142,12 +148,12 @@ void* modbus_slave_decode_start(void* data) {
 					}
 					break;
 				case 0x10:
-					read_offset = ((cb->read_offset + 6+2)%cb->count);
-					data_len = (*((uint8_t*)cb->ptr + read_offset));
+					read_offset = ((cb->exit + 6+2)%cb->size);
+					data_len = (*((uint8_t*)cb->dataBufer + read_offset));
 					//计算字节：第七元素数据字节数＋前面７个字节数
 					msg_len = data_len+7;
 
-					if(cb_bytes_can_read(cb) >= (uint32_t)(msg_len+2+2))
+					if(CQ_getLength(cb) >= (uint32_t)(msg_len+2+2))
 					{
 						CQ_get_buff_Data(cb, tmp_buff, msg_len+2+2);
 						if(return_check_crc(tmp_buff+2 ,msg_len))//校验正确
@@ -156,7 +162,7 @@ void* modbus_slave_decode_start(void* data) {
 							reg_start_addr = tmp_buff[2+2];
 							reg_start_addr <<= 8;
 							reg_start_addr |= tmp_buff[3+2];
-							if(reg_start_addr >= SET_UART_MODE && (reg_start_addr+data_len/2) < MODBUS_PROTOL)
+							if(reg_start_addr >= IR_MATRIX_GRAPH_START && (reg_start_addr+data_len/2) < IR_MATRIX_GRAPH_END)
 							{
 								goto _set_self_par;
 							}
@@ -167,7 +173,6 @@ void* modbus_slave_decode_start(void* data) {
 							if(uart_mode == REC_NOT_THROUGH_MODE)//本机解析模式
 							{
 								_set_self_par:
-//								pthread_mutex_lock(&GNNC_REC_Data_mutex_lock);
 								reg_start_addr = tmp_buff[2+2];
 								reg_start_addr <<= 8;
 								reg_start_addr |= tmp_buff[3+2];
@@ -183,7 +188,6 @@ void* modbus_slave_decode_start(void* data) {
 								debug_print(tmp_buff,msg_len+2+2);
 								rec_master_data(&rec_data_temp ,reg_start_addr ,reg_len);
 								CQ_read_offset_inc(cb, msg_len+2+2);//偏移一帧报文
-//								pthread_mutex_unlock(&GNNC_REC_Data_mutex_lock);
 							}
 						}
 						else
@@ -198,7 +202,7 @@ void* modbus_slave_decode_start(void* data) {
 					}
 					break;
 				default:
-					debug_print((uint8_t*)((uint8_t*)cb->ptr + cb->read_offset),8+2);
+					debug_print((uint8_t*)((uint8_t*)cb->dataBufer + cb->exit),8+2);
 					CQ_read_offset_inc(cb, 1);//什么都不是－>丢弃１字节
 					printf("slave : modbus_0x**　return　CRC error!\n");
 					break;
@@ -207,18 +211,18 @@ void* modbus_slave_decode_start(void* data) {
 		modbusDelay(100);
 #else
 		//比较当前可读数据长度=当前写入长度-已读长度）大于7即可进入,符合modbus协议最小长度
-		if(cb_bytes_can_read(cb) >= 7)
+		if(CQ_getLength(cb) >= 7)
 		{
-			msg_device_addr = *(((uint8_t*)cb->ptr + (cb->read_offset%cb->count))); //第一个字节为设备地址
-			read_offset = ((cb->read_offset + 1)%cb->count);
-			msg_cmd = *(((uint8_t*)cb->ptr + read_offset)); //第二个字节为功能码
+			msg_device_addr = *(((uint8_t*)cb->dataBufer + (cb->exit%cb->size))); //第一个字节为设备地址
+			read_offset = ((cb->exit + 1)%cb->size);
+			msg_cmd = *(((uint8_t*)cb->dataBufer + read_offset)); //第二个字节为功能码
 			rec_data_temp.cmd = msg_cmd;
 			switch(msg_cmd)
 			{
 				case 0x03:
 					msg_len = 6;//不含CRC字节数
 					//判断数据长度
-					if(cb_bytes_can_read(cb) >= (uint32_t)(msg_len+2))
+					if(CQ_getLength(cb) >= (uint32_t)(msg_len+2))
 					{
 						CQ_get_buff_Data(cb, tmp_buff, msg_len+2);
 						if(return_check_crc(tmp_buff ,msg_len))
@@ -230,7 +234,7 @@ void* modbus_slave_decode_start(void* data) {
 							reg_len = tmp_buff[4];
 							reg_len <<= 8;
 							reg_len |= tmp_buff[5];
-							if(reg_start_addr >= SET_UART_MODE && (reg_start_addr+reg_len) < MODBUS_PROTOL)
+							if(reg_start_addr >= IR_MATRIX_GRAPH_START && (reg_start_addr+reg_len) < IR_MATRIX_GRAPH_END)
 							{
 								goto _read_self_par;
 							}
@@ -267,17 +271,16 @@ void* modbus_slave_decode_start(void* data) {
 					else
 					{
 						modbusDelay(1);
-						error_flag++;
 					}
 					break;
 				case 0x13:
 					//解析需读取的寄存器数目--非连续
-					read_offset = ((cb->read_offset + 2)%cb->count);
-					reg_len = (*((uint8_t*)cb->ptr + read_offset));
+					read_offset = ((cb->exit + 2)%cb->size);
+					reg_len = (*((uint8_t*)cb->dataBufer + read_offset));
 					//CRC校验
 					msg_len = 3+(reg_len*2)+3;
 					//判断数据长度
-					if(cb_bytes_can_read(cb) >= (uint32_t)(msg_len+2))
+					if(CQ_getLength(cb) >= (uint32_t)(msg_len+2))
 					{
 						CQ_get_buff_Data(cb, (uint8_t *)tmp_buff, msg_len+2);
 						if(return_check_crc(tmp_buff ,msg_len))//校验正确
@@ -299,15 +302,14 @@ void* modbus_slave_decode_start(void* data) {
 					else
 					{
 						modbusDelay(1);
-						error_flag++;
 					}
 					break;
 				case 0x10:
-					read_offset = ((cb->read_offset + 6)%cb->count);
-					data_len = (*((uint8_t*)cb->ptr + read_offset));
+					read_offset = ((cb->exit + 6)%cb->size);
+					data_len = (*((uint8_t*)cb->dataBufer + read_offset));
 					//计算字节：第七元素数据字节数＋前面７个字节数
 					msg_len = data_len+7;
-					if(cb_bytes_can_read(cb) >= (uint32_t)(msg_len+2))
+					if(CQ_getLength(cb) >= (uint32_t)(msg_len+2))
 					{
 						CQ_get_buff_Data(cb, (uint8_t *)tmp_buff, msg_len+2);
 						if(return_check_crc(tmp_buff ,msg_len))//校验正确
@@ -316,7 +318,7 @@ void* modbus_slave_decode_start(void* data) {
 							reg_start_addr = tmp_buff[2];
 							reg_start_addr <<= 8;
 							reg_start_addr |= tmp_buff[3];
-							if(reg_start_addr >= SET_UART_MODE && (reg_start_addr+data_len/2) < MODBUS_PROTOL)
+							if(reg_start_addr >= IR_MATRIX_GRAPH_START && (reg_start_addr+data_len/2) < IR_MATRIX_GRAPH_END)
 							{
 								goto _set_self_par;
 							}
@@ -353,11 +355,10 @@ void* modbus_slave_decode_start(void* data) {
 					else
 					{
 						modbusDelay(1);
-						error_flag++;
 					}
 					break;
 				default:
-					debug_print((uint8_t*)((uint8_t*)cb->ptr + cb->read_offset),8);
+					debug_print((uint8_t*)((uint8_t*)cb->dataBufer + cb->exit),8);
 					CQ_read_offset_inc(cb, 1);//什么都不是－>丢弃１字节
 					printf("slave : modbus_0x**　return　CRC error!\n");
 					break;
@@ -366,8 +367,6 @@ void* modbus_slave_decode_start(void* data) {
 		modbusDelay(100);
 #endif
 	}//end while
-	printf("ERROR !!!\n");
-	return NULL;
 }
 
 
@@ -411,7 +410,7 @@ static void rec_master_data(modbus_master_rec_t *rec_struct ,uint16_t reg_begin_
 #if ENABLE_MODBUS_DEBUG
 			printf("==写入寄存器值:%04X,寄存器:%d==\n",rec_struct->rec_data,reg_addr);
 #endif
-			reg_process_map[Check_Modbus_Addr(reg_addr)].func(rec_struct);
+			SlaveReg_process_map[SlaveCheck_Modbus_Addr(reg_addr)].func(rec_struct);
 			read_offset += 2;
 		}
 		//寄存器地址
@@ -426,7 +425,7 @@ static void rec_master_data(modbus_master_rec_t *rec_struct ,uint16_t reg_begin_
 		ack_data_buff[6+2] =(uint8_t)(crc_ret &0x00FF);//有无符号重要！
 		ack_data_buff[7+2] = (uint8_t)((crc_ret>>8)&0x00FF);
 		//ACK发送至上位机
-		tcp_client_tx(sockfd, ack_data_buff, 8+2);//发送至本机上级
+//		tcp_client_tx(sockfd, ack_data_buff, 8+2);//发送至本机上级
 	}
 	//读取命令
 	if(ack_data_buff[1+2] == 0x03)
@@ -445,7 +444,7 @@ static void rec_master_data(modbus_master_rec_t *rec_struct ,uint16_t reg_begin_
 		//读取寄存器数据 填充
 		for(reg_addr = reg_begin_addr;reg_addr < reg_end ;reg_addr++)
 		{
-			ret_data = reg_process_map[Check_Modbus_Addr(reg_addr)].func(rec_struct);
+			ret_data = SlaveReg_process_map[SlaveCheck_Modbus_Addr(reg_addr)].func(rec_struct);
 //			printf("读取寄存器值:%d,值:%d\n",reg_addr,ret_data);
 			ack_data_buff[read_offset++] = ((ret_data>>8)&0xFF);
 			ack_data_buff[read_offset++] = (ret_data&0xFF);
@@ -456,7 +455,7 @@ static void rec_master_data(modbus_master_rec_t *rec_struct ,uint16_t reg_begin_
 		ack_data_buff[read_offset++] =(uint8_t)(crc_ret &0x00FF);//有无符号重要！
 		ack_data_buff[read_offset++] = (uint8_t)((crc_ret>>8)&0x00FF);
 		//ACK发送至上位机
-		tcp_client_tx(sockfd, ack_data_buff ,read_offset);//发送至本机上级
+//		tcp_client_tx(sockfd, ack_data_buff ,read_offset);//发送至本机上级
 	}
 	if(ack_data_buff[1+2] == 0x13)
 	{
@@ -484,7 +483,7 @@ static void rec_master_data(modbus_master_rec_t *rec_struct ,uint16_t reg_begin_
 				reg_addr = rec_struct->buff_addr[reg_addr_index];
 				reg_addr <<= 8;
 				reg_addr |=  rec_struct->buff_addr[reg_addr_index+1];
-				ret_data = reg_process_map[Check_Modbus_Addr(reg_addr)].func(rec_struct);
+				ret_data = SlaveReg_process_map[SlaveCheck_Modbus_Addr(reg_addr)].func(rec_struct);
 #if ENABLE_MODBUS_DEBUG
 				printf("读取通道%d--寄存器:%d,值:%04X\n",rec_struct->channnel,reg_addr,ret_data);
 #endif
@@ -499,7 +498,7 @@ static void rec_master_data(modbus_master_rec_t *rec_struct ,uint16_t reg_begin_
 		ack_data_buff[read_offset++] =(uint8_t)(crc_ret &0x00FF);//有无符号重要！
 		ack_data_buff[read_offset++] = (uint8_t)((crc_ret>>8)&0x00FF);
 		//ACK发送至上位机
-		tcp_client_tx(sockfd, ack_data_buff ,read_offset);//发送至本机上级
+//		tcp_client_tx(sockfd, ack_data_buff ,read_offset);//发送至本机上级
 
 	}
 #else
@@ -523,7 +522,7 @@ static void rec_master_data(modbus_master_rec_t *rec_struct ,uint16_t reg_begin_
 			rec_struct->rec_data <<= 8;
 			rec_struct->rec_data |= (*(data_addr+read_offset+1))&0xFF;
 			printf("==写入寄存器值:%04X,寄存器:%d==\n",rec_struct->rec_data,reg_addr);
-			reg_process_map[Check_Modbus_Addr(reg_addr)].func(rec_struct);
+			SlaveReg_process_map[SlaveCheck_Modbus_Addr(reg_addr)].func(rec_struct);
 			read_offset += 2;
 		}
 		//寄存器地址
@@ -538,7 +537,7 @@ static void rec_master_data(modbus_master_rec_t *rec_struct ,uint16_t reg_begin_
 		ack_data_buff[6] =(uint8_t)(crc_ret &0x00FF);//有无符号重要！
 		ack_data_buff[7] = (uint8_t)((crc_ret>>8)&0x00FF);
 		//ACK发送至上位机
-		tcp_client_tx(sockfd, ack_data_buff, 8);//发送至本机上级
+//		tcp_client_tx(sockfd, ack_data_buff, 8);//发送至本机上级
 	}
 	//读取命令
 	if(ack_data_buff[1] == 0x03)
@@ -556,7 +555,7 @@ static void rec_master_data(modbus_master_rec_t *rec_struct ,uint16_t reg_begin_
 		//读取寄存器数据 填充
 		for(reg_addr = reg_begin_addr;reg_addr < reg_end ;reg_addr++)
 		{
-			ret_data = reg_process_map[Check_Modbus_Addr(reg_addr)].func(rec_struct);
+			ret_data = SlaveReg_process_map[SlaveCheck_Modbus_Addr(reg_addr)].func(rec_struct);
 			printf("读取寄存器值:%d,值:%d\n",reg_addr,ret_data);
 			ack_data_buff[read_offset++] = ((ret_data>>8)&0xFF);
 			ack_data_buff[read_offset++] = (ret_data&0xFF);
@@ -567,7 +566,7 @@ static void rec_master_data(modbus_master_rec_t *rec_struct ,uint16_t reg_begin_
 		ack_data_buff[read_offset++] =(uint8_t)(crc_ret &0x00FF);//有无符号重要！
 		ack_data_buff[read_offset++] = (uint8_t)((crc_ret>>8)&0x00FF);
 		//ACK发送至上位机
-		tcp_client_tx(sockfd, ack_data_buff ,read_offset);//发送至本机上级
+//		tcp_client_tx(sockfd, ack_data_buff ,read_offset);//发送至本机上级
 	}
 	if(ack_data_buff[1] == 0x13)
 	{
@@ -594,7 +593,7 @@ static void rec_master_data(modbus_master_rec_t *rec_struct ,uint16_t reg_begin_
 				reg_addr = rec_struct->buff_addr[reg_addr_index];
 				reg_addr <<= 8;
 				reg_addr |=  rec_struct->buff_addr[reg_addr_index+1];
-				ret_data = reg_process_map[Check_Modbus_Addr(reg_addr)].func(rec_struct);
+				ret_data = SlaveReg_process_map[SlaveCheck_Modbus_Addr(reg_addr)].func(rec_struct);
 #if ENABLE_MODBUS_DEBUG
 				printf("读取通道%d--寄存器:%d,值:%04X\n",rec_struct->channnel,reg_addr,ret_data);
 #endif
@@ -609,7 +608,7 @@ static void rec_master_data(modbus_master_rec_t *rec_struct ,uint16_t reg_begin_
 		ack_data_buff[read_offset++] =(uint8_t)(crc_ret &0x00FF);//有无符号重要！
 		ack_data_buff[read_offset++] = (uint8_t)((crc_ret>>8)&0x00FF);
 		//ACK发送至上位机
-		tcp_client_tx(sockfd, ack_data_buff ,read_offset);//发送至本机上级
+		ModbusUsart_tx_Master(ack_data_buff ,read_offset);//发送至本机上级
 
 	}
 #endif
@@ -621,7 +620,7 @@ static void rec_master_data(modbus_master_rec_t *rec_struct ,uint16_t reg_begin_
 static void broker_rw_message(int channel,uint8_t *ptr,uint16_t msglen)
 {
 	uint16_t crc_ret = 0;
-	uint8_t Uart_Send_slave_BUFF[UART_SEND_BUFF_MAX];
+	uint8_t Uart_Send_slave_BUFF[UART_BUFF_MAX];
 	//复制数据
 	memcpy(Uart_Send_slave_BUFF,(uint8_t*)ptr,msglen);
 	//修改数据
@@ -648,7 +647,7 @@ static void broker_send_message_to_slave(uint8_t msg_device_addr ,uint8_t* msg ,
 {
 	if(msg_device_addr >= 0x01 && msg_device_addr <= UART_NUM_MAX)
 	{
-		usart_tx(polling_msg[msg_device_addr].cb->fd ,msg ,len);
+		ModbusUsart_tx(polling_msg[msg_device_addr].fd ,msg ,len);
 	}
 }
 

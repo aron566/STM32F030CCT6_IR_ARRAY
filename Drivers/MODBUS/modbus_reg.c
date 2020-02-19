@@ -14,17 +14,18 @@ extern "C" {
 #include "modbus_type.h"
 #include "modbus_reg.h"
 
-#define MAX_REG_COUNT 	26U//定义最大寄存器处理数量    
+#define SLAVE_MAX_REG_COUNT 	26U//定义最大寄存器处理数量    
+#define MASTER_MAX_REG_COUNT 	 3U//定义最大寄存器处理数量  
 
-/*查找索引*/
-static int Check_Modbus_Addr(uint16_t Reg_start_addr);
+device_reg_info_t device_v_info;
 
-static uint16_t Real_Time_Temp_Int(void *data);
+static uint16_t Real_Time_Temp(void *data);
+static uint16_t Ir_Matrix_Graph(void *data);/*红外图像*/
+
 static uint16_t People_Num_Hour(void *data);
 static uint16_t People_Num_Day(void *data);
 static uint16_t People_Num_Week(void *data);
 static uint16_t People_Num_Month(void *data);
-static uint16_t Ir_Matrix_Graph(void *data);/*红外图像*/
 static uint16_t Max_Record_Num(void *data);
 static uint16_t Current_Record_Num_H(void *data);
 static uint16_t Current_Record_Num_L(void *data);
@@ -41,7 +42,8 @@ static uint16_t Command_Control(void *data);
 static uint16_t Set_Alarm_Low_Temp(void *data);
 static uint16_t Set_Alarm_Hi_Temp(void *data);
 static uint16_t Set_Modbus_Id(void *data);
-static uint16_t Set_Baud_Rate(void *data);
+static uint16_t Set_Baud_Rate_H(void *data);
+static uint16_t Set_Baud_Rate_L(void *data);
 static uint16_t Set_Sys_Time_H(void *data);
 static uint16_t Set_Sys_Time_L(void *data);
 
@@ -51,17 +53,16 @@ static uint16_t Unused_Ack(void *data);
 
 
 /*寄存器对应处理映射 --每增加索引列表 需更改 MAX_REG_COUNT 值 */
-modbus_process_t reg_process_map[MAX_REG_COUNT] =
+modbus_process_t SlaveReg_process_map[SLAVE_MAX_REG_COUNT] =
 {
-	{REAL_TIME_TEMP_INT ,Real_Time_Temp_Int},//1
-	{PEOPLE_NUM_HOUR ,People_Num_Hour},//2
-	{PEOPLE_NUM_DAY ,People_Num_Day},//3
-	{PEOPLE_NUM_WEEK ,People_Num_Week},//4
-	{PEOPLE_NUM_MONTH ,People_Num_Month},//5
-	{IR_MATRIX_GRAPH ,Ir_Matrix_Graph},//6
-	{MAX_RECORD_NUM ,Max_Record_Num},//7
-	{CURRENT_RECORD_NUM_H ,Current_Record_Num_H},//8
-	{CURRENT_RECORD_NUM_L ,Current_Record_Num_L},//9
+    {IR_MATRIX_GRAPH_START ,Ir_Matrix_Graph},
+	{PEOPLE_NUM_HOUR ,People_Num_Hour},
+	{PEOPLE_NUM_DAY ,People_Num_Day},
+	{PEOPLE_NUM_WEEK ,People_Num_Week},
+	{PEOPLE_NUM_MONTH ,People_Num_Month},
+	{MAX_RECORD_NUM ,Max_Record_Num},
+	{CURRENT_RECORD_NUM_H ,Current_Record_Num_H},
+	{CURRENT_RECORD_NUM_L ,Current_Record_Num_L},
 	{FIRST_RECORD_NUM_H ,First_Record_Num_H},
 	{FIRST_RECORD_NUM_L ,First_Record_Num_L},
 	{SET_ALARM_NUM_H ,Set_Alarm_Num_H},
@@ -75,74 +76,54 @@ modbus_process_t reg_process_map[MAX_REG_COUNT] =
 	{SET_ALARM_LOW_TEMP ,Set_Alarm_Low_Temp},
 	{SET_ALARM_HI_TEMP ,Set_Alarm_Hi_Temp},
 	{SET_MODBUS_ID ,Set_Modbus_Id},
-	{SET_BAUD_RATE ,Set_Baud_Rate},
+	{SET_BAUD_RATE_H ,Set_Baud_Rate_H},
+    {SET_BAUD_RATE_L ,Set_Baud_Rate_L},
 	{SET_SYS_TIME_H ,Set_Sys_Time_H},
 	{SET_SYS_TIME_L ,Set_Sys_Time_L},
 	{0xFFFF,Unused_Ack}
 };   
 
-
-/*
- * 本机作为master解析从站数据 --存入数据库
- *
- * 参数:rec_struct 包含所需cmd datapointer channel_num
- * 参数:len cmd 0x03时字节长度  cmd 0x10时ack消息
- * */
-void rec_slave_data(modbus_master_rec_t *rec_struct ,uint8_t len)
+modbus_process_t MasteReg_process_map[MASTER_MAX_REG_COUNT] =
 {
-	uint16_t data_temp = 0;
-	//数据地址
-	uint8_t *data_addr = rec_struct->data_addr;
-	//获取来自通道信息
-	uint8_t channel_num = rec_struct->channnel;
-	//数据对应起始寄存器地址
-	uint16_t reg_addr = polling_msg[channel_num].read_reg;
-	//解析从站返回的读操作数据
-	if(rec_struct->cmd == 0x03)
-	{
-#if ENABLE_MODBUS_DEBUG
-		printf("接收通道：%u 数据长度:%d\n",channel_num,len);
-#endif
-		for(uint16_t read_offset = 0; read_offset < len;read_offset += 2)
-		{
-			//准备数据
-			data_temp = (*(data_addr+read_offset))&0xFF;
-			data_temp <<= 8;
-			data_temp |= (*(data_addr+read_offset+1))&0xFF;
-			rec_struct->rec_data = data_temp;
-			//存入数据
-#if ENABLE_MODBUS_DEBUG
-			printf("接收寄存器%u--数据:%04X---%u\n",reg_addr,data_temp,data_temp);
-#endif
-			//调用处理对应寄存器
-			reg_process_map[Check_Modbus_Addr(reg_addr)].func(rec_struct);
-			//下一个寄存器
-			reg_addr++;
-		}
-	}
-	//解析从站返回的写操作ACK
-	if(rec_struct->cmd == 0x10)
-	{
-
-	}
-}
+	{REAL_TIME_TEMP ,Real_Time_Temp},
+    {IR_MATRIX_GRAPH_START ,Ir_Matrix_Graph},
+    {0xFFFF,Unused_Ack}
+};
 
 
-/* 查找对应寄存器处理索引 */
-static int Check_Modbus_Addr(uint16_t Reg_start_addr)
+
+/* 本机作为slave 查找对应寄存器处理索引 */
+int SlaveCheck_Modbus_Addr(uint16_t Reg_start_addr)
 {
 	int ret = 0;
 	uint8_t index = 0;
-	for(;index < MAX_REG_COUNT;index++)
+	for(;index < SLAVE_MAX_REG_COUNT;index++)
 	{
-		if(reg_process_map[index].register_num == Reg_start_addr)
+		if(SlaveReg_process_map[index].register_num == Reg_start_addr)
 		{
 			ret = index;
 			return ret;
 		}
 	}
-	return MAX_REG_COUNT-1;/*未找到,使用默认处理*/
+	return SLAVE_MAX_REG_COUNT-1;/*未找到,使用默认处理*/
 }
+
+/*本机作为master 查找对应寄存器处理索引*/
+int MasterCheck_Modbus_Addr(uint16_t Reg_start_addr)
+{
+    int ret = 0;
+	uint8_t index = 0;
+	for(;index < MASTER_MAX_REG_COUNT;index++)
+	{
+		if(MasteReg_process_map[index].register_num == Reg_start_addr)
+		{
+			ret = index;
+			return ret;
+		}
+	}
+	return MASTER_MAX_REG_COUNT-1;/*未找到,使用默认处理*/
+}
+
 
 /* 未能找到对应寄存器处理方法 */
 static uint16_t Unused_Ack(void *data)
@@ -151,7 +132,7 @@ static uint16_t Unused_Ack(void *data)
 }
 
 /*实时温度*/
-static uint16_t Real_Time_Temp_Int(void *data)
+static uint16_t Real_Time_Temp(void *data)
 {
     return 0;
 }
@@ -255,10 +236,70 @@ static uint16_t Set_Modbus_Id(void *data)
 {
     return 0;
 }
-static uint16_t Set_Baud_Rate(void *data)
+
+/*设置通讯波特率 高字节*/
+static uint16_t Set_Baud_Rate_H(void *data)
 {
+	modbus_master_rec_t *temp_data = (modbus_master_rec_t *)data;
+	if(temp_data->channnel > UART_NUM_MAX)
+	{
+		printf("参数越界！\n");
+		return 0;
+	}
+    //读取
+	if(temp_data->cmd == 0x03)
+	{
+		return device_v_info.baud_rate_H_val;
+	}
+    //读取
+	if(temp_data->cmd == 0x13)
+	{
+		return device_v_info.baud_rate_H_val;
+	}
+    //设置
+    if(temp_data->cmd == 0x10)
+    {
+        device_v_info.baud_rate_H_val = (temp_data->rec_data&0xFFFF);
+    }
     return 0;
 }
+
+/*设置通讯波特率 低字节*/
+static uint16_t Set_Baud_Rate_L(void *data)
+{
+	modbus_master_rec_t *temp_data = (modbus_master_rec_t *)data;
+	if(temp_data->channnel > UART_NUM_MAX)
+	{
+		printf("参数越界！\n");
+		return 0;
+	}
+	if(temp_data->cmd == 0x03)
+	{
+		return device_v_info.baud_rate_L_val;
+	}
+	if(temp_data->cmd == 0x13)
+	{
+		return device_v_info.baud_rate_L_val;
+	}
+    if(temp_data->cmd == 0x10)
+    {
+        UART_HandleTypeDef *pHuart = polling_msg[temp_data->channnel].fd;
+        uint32_t baud_rate = device_v_info.baud_rate_H_val;
+        baud_rate <<= 16;
+        device_v_info.baud_rate_L_val = (temp_data->rec_data&0xFFFF);
+        //波特率
+        baud_rate |= device_v_info.baud_rate_L_val;
+        if ( baud_rate != pHuart->Init.BaudRate )
+        {
+            HAL_UART_Abort(pHuart); //先停止再设置。如果直接设置，串口又正好在发送中断，会出现中断死循环
+            pHuart->Init.BaudRate = baud_rate;
+            HAL_UART_Init(pHuart);
+        }
+    }
+    return 0;
+}
+
+
 
 static uint16_t Set_Sys_Time_H(void *data)
 {

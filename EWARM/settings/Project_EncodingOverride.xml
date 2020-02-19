@@ -9,6 +9,14 @@
         <encoding>System</encoding>
     </override>
     <override>
+        <path>G:\C_file\GNNC_File\STM32F030CCT6_IR_ARRAY\Drivers\MODBUS\modbus_port.c</path>
+        <encoding>System</encoding>
+    </override>
+    <override>
+        <path>G:\C_file\GNNC_File\STM32F030CCT6_IR_ARRAY\Drivers\MODBUS\modbus_port.h</path>
+        <encoding>System</encoding>
+    </override>
+    <override>
         <path>G:\C_file\GNNC_File\STM32F030CCT6_IR_ARRAY\Drivers\MODBUS\modbus_reg.c</path>
         <encoding>System</encoding>
     </override>
@@ -34,6 +42,10 @@
     </override>
     <override>
         <path>G:\C_file\GNNC_File\STM32F030CCT6_IR_ARRAY\Drivers\MODBUS\task_slave.c</path>
+        <encoding>System</encoding>
+    </override>
+    <override>
+        <path>G:\C_file\SNAI_C_FILE\STM32F030CCT6_IR_ARRAY\Drivers\MODBUS\modbus_reg.c</path>
         <encoding>System</encoding>
     </override>
 </userOverrides>

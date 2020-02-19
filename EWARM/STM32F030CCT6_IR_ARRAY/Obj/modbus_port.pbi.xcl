@@ -1,9 +1,9 @@
-"G:\C_file\GNNC_File\STM32F030CCT6_IR_ARRAY\Src\usart.c"
+"G:\C_file\GNNC_File\STM32F030CCT6_IR_ARRAY\Drivers\MODBUS\modbus_port.c"
 -std=c11
 -ferror-limit=0
 -fbracket-depth=512
 -I
-G:\C_file\GNNC_File\STM32F030CCT6_IR_ARRAY\Src
+G:\C_file\GNNC_File\STM32F030CCT6_IR_ARRAY\Drivers\MODBUS
 -I
 G:\C_file\GNNC_File\STM32F030CCT6_IR_ARRAY\EWARM/../Inc
 -I

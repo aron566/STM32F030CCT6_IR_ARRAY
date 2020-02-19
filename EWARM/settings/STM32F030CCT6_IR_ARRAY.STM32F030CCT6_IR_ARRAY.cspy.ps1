@@ -23,9 +23,9 @@
 
 if ($debugfile -eq "")
 {
-& "C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.2\common\bin\cspybat" -f "G:\C_file\GNNC_File\STM32F030CCT6_IR_ARRAY\EWARM\settings\STM32F030CCT6_IR_ARRAY.STM32F030CCT6_IR_ARRAY.general.xcl" --backend -f "G:\C_file\GNNC_File\STM32F030CCT6_IR_ARRAY\EWARM\settings\STM32F030CCT6_IR_ARRAY.STM32F030CCT6_IR_ARRAY.driver.xcl" 
+& "C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.2\common\bin\cspybat" -f "G:\C_file\SNAI_C_FILE\STM32F030CCT6_IR_ARRAY\EWARM\settings\STM32F030CCT6_IR_ARRAY.STM32F030CCT6_IR_ARRAY.general.xcl" --backend -f "G:\C_file\SNAI_C_FILE\STM32F030CCT6_IR_ARRAY\EWARM\settings\STM32F030CCT6_IR_ARRAY.STM32F030CCT6_IR_ARRAY.driver.xcl" 
 }
 else
 {
-& "C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.2\common\bin\cspybat" -f "G:\C_file\GNNC_File\STM32F030CCT6_IR_ARRAY\EWARM\settings\STM32F030CCT6_IR_ARRAY.STM32F030CCT6_IR_ARRAY.general.xcl" --debug_file=$debugfile --backend -f "G:\C_file\GNNC_File\STM32F030CCT6_IR_ARRAY\EWARM\settings\STM32F030CCT6_IR_ARRAY.STM32F030CCT6_IR_ARRAY.driver.xcl" 
+& "C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.2\common\bin\cspybat" -f "G:\C_file\SNAI_C_FILE\STM32F030CCT6_IR_ARRAY\EWARM\settings\STM32F030CCT6_IR_ARRAY.STM32F030CCT6_IR_ARRAY.general.xcl" --debug_file=$debugfile --backend -f "G:\C_file\SNAI_C_FILE\STM32F030CCT6_IR_ARRAY\EWARM\settings\STM32F030CCT6_IR_ARRAY.STM32F030CCT6_IR_ARRAY.driver.xcl" 
 }
