@@ -21,6 +21,8 @@ unsigned short CRC_Return(unsigned char *Crc_Buf, unsigned short Crc_Len);
 /*调试打印*/
 void debug_print(uint8_t *msg,uint8_t msg_len);
 
+/*查找通讯端口索引号*/
+uint8_t get_end_point(UART_HandleTypeDef *fd);
 
 #ifdef __cplusplus //使用ｃ编译
 }

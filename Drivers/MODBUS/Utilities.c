@@ -22,14 +22,14 @@ static uint16_t Crc_Cal(unsigned short Data, unsigned short GenPoly, unsigned sh
  *
  * fd所属端口
  *
- * 返回所属端口号
+ * 返回所属索引号
  * */
-uint8_t get_end_point(int fd)
+uint8_t get_end_point(UART_HandleTypeDef *fd)
 {
 	uint8_t uart_endpoint = 0;
 	for(uint8_t i = 0;i < UART_NUM_MAX+1;i++)
 	{
-		if(polling_msg[i].cb->fd == fd)
+		if(polling_msg[i].fd == fd)
 		{
 			uart_endpoint = i;
 			break;
@@ -37,7 +37,7 @@ uint8_t get_end_point(int fd)
 	}
 	if(uart_endpoint == 0)
 	{
-		printf("end_pointer error FD:%d\n",fd);
+		printf("end_pointer error FD:%p\n",fd);
 	}
 	return uart_endpoint;
 }

@@ -23,6 +23,22 @@ G:\C_file\GNNC_File\STM32F030CCT6_IR_ARRAY\EWARM/../Drivers/CMSIS/Include
 -I
 G:\C_file\GNNC_File\STM32F030CCT6_IR_ARRAY\EWARM\..\Drivers\MODBUS
 -I
+G:\C_file\GNNC_File\STM32F030CCT6_IR_ARRAY\EWARM\..\Drivers\8025T
+-I
+G:\C_file\GNNC_File\STM32F030CCT6_IR_ARRAY\EWARM\..\Drivers\SCREEN_1.8
+-I
+G:\C_file\GNNC_File\STM32F030CCT6_IR_ARRAY\EWARM\..\Drivers\CircularBUFF
+-I
+G:\C_file\GNNC_File\STM32F030CCT6_IR_ARRAY\EWARM\..\Drivers\MODBUS\master
+-I
+G:\C_file\GNNC_File\STM32F030CCT6_IR_ARRAY\EWARM\..\Drivers\MODBUS\slave
+-I
+G:\C_file\GNNC_File\STM32F030CCT6_IR_ARRAY\EWARM\..\Drivers\Peripheral
+-I
+G:\C_file\GNNC_File\STM32F030CCT6_IR_ARRAY\EWARM\..\Drivers\UART
+-I
+G:\C_file\GNNC_File\STM32F030CCT6_IR_ARRAY\EWARM\..\Drivers\MISC
+-I
 C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.2\arm\inc
 -I
 C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.2\arm\inc\c
@@ -44,6 +60,22 @@ G:\C_file\GNNC_File\STM32F030CCT6_IR_ARRAY\Drivers\CMSIS\Device\ST\STM32F0xx\Inc
 G:\C_file\GNNC_File\STM32F030CCT6_IR_ARRAY\Drivers\CMSIS\Include
 -I
 G:\C_file\GNNC_File\STM32F030CCT6_IR_ARRAY\Drivers\MODBUS
+-I
+G:\C_file\GNNC_File\STM32F030CCT6_IR_ARRAY\Drivers\8025T
+-I
+G:\C_file\GNNC_File\STM32F030CCT6_IR_ARRAY\Drivers\SCREEN_1.8
+-I
+G:\C_file\GNNC_File\STM32F030CCT6_IR_ARRAY\Drivers\CircularBUFF
+-I
+G:\C_file\GNNC_File\STM32F030CCT6_IR_ARRAY\Drivers\MODBUS\master
+-I
+G:\C_file\GNNC_File\STM32F030CCT6_IR_ARRAY\Drivers\MODBUS\slave
+-I
+G:\C_file\GNNC_File\STM32F030CCT6_IR_ARRAY\Drivers\Peripheral
+-I
+G:\C_file\GNNC_File\STM32F030CCT6_IR_ARRAY\Drivers\UART
+-I
+G:\C_file\GNNC_File\STM32F030CCT6_IR_ARRAY\Drivers\MISC
 -D__CHAR_BITS__=8
 -D__CHAR_MAX__=0xff
 -D__CHAR_MIN__=0
@@ -298,6 +330,7 @@ G:\C_file\GNNC_File\STM32F030CCT6_IR_ARRAY\Drivers\MODBUS
 -DSTM32F030xC=1
 -DUSE_LINUX_SYSTEM=0
 -DUSE_TCP_SEQUENS_NUM=0
+-DENABLE_MODBUS_DEBUG=0
 -D_DLIB_CONFIG_FILE_HEADER_NAME="C:\\Program Files (x86)\\IAR Systems\\Embedded Workbench 8.2\\arm\\inc\\c\\DLib_Config_Full.h"
 -D_DLIB_CONFIG_FILE_STRING="C:\\Program Files (x86)\\IAR Systems\\Embedded Workbench 8.2\\arm\\inc\\c\\DLib_Config_Full.h"
 -D__VERSION__="IAR ANSI C/C++ Compiler V8.32.1.169/W32 for ARM"

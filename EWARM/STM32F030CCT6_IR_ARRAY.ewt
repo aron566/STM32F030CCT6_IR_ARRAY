@@ -1208,6 +1208,9 @@
                 <name>$PROJ_DIR$\..\Src\i2c.c</name>
             </file>
             <file>
+                <name>$PROJ_DIR$\..\Src\iwdg.c</name>
+            </file>
+            <file>
                 <name>$PROJ_DIR$\..\Src\main.c</name>
             </file>
             <file>
@@ -1245,7 +1248,61 @@
             </file>
         </group>
         <group>
+            <name>MISC</name>
+            <file>
+                <name>$PROJ_DIR$\..\Drivers\MISC\debug_queue.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\Drivers\MISC\debugPrintf.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\Drivers\MISC\debugPrintfTask.c</name>
+            </file>
+        </group>
+        <group>
             <name>MODBUS</name>
+            <group>
+                <name>master</name>
+                <file>
+                    <name>$PROJ_DIR$\..\Drivers\MODBUS\master\modbus_master.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\Drivers\MODBUS\master\modbus_master.h</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\Drivers\MODBUS\master\modbus_master_fill_msg.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\Drivers\MODBUS\master\modbus_master_parse_msg.c</name>
+                </file>
+            </group>
+            <group>
+                <name>slave</name>
+                <file>
+                    <name>$PROJ_DIR$\..\Drivers\MODBUS\slave\modbus_slave.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\Drivers\MODBUS\slave\modbus_slave.h</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\Drivers\MODBUS\slave\modbus_slave_read.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\Drivers\MODBUS\slave\modbus_slave_serial.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\Drivers\MODBUS\slave\modbus_slave_serial.h</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\Drivers\MODBUS\slave\modbus_slave_write.c</name>
+                </file>
+            </group>
+            <file>
+                <name>$PROJ_DIR$\..\Drivers\MODBUS\modbus_bytes.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\Drivers\MODBUS\modbus_CRC.c</name>
+            </file>
             <file>
                 <name>$PROJ_DIR$\..\Drivers\MODBUS\modbus_port.c</name>
             </file>
@@ -1260,6 +1317,12 @@
             </file>
             <file>
                 <name>$PROJ_DIR$\..\Drivers\MODBUS\Utilities.c</name>
+            </file>
+        </group>
+        <group>
+            <name>Peripheral</name>
+            <file>
+                <name>$PROJ_DIR$\..\Drivers\Peripheral\peripheral.c</name>
             </file>
         </group>
         <group>
@@ -1298,6 +1361,9 @@
                 <name>$PROJ_DIR$\..\Drivers\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_i2c_ex.c</name>
             </file>
             <file>
+                <name>$PROJ_DIR$\..\Drivers\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_iwdg.c</name>
+            </file>
+            <file>
                 <name>$PROJ_DIR$\..\Drivers\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_pwr.c</name>
             </file>
             <file>
@@ -1320,6 +1386,15 @@
             </file>
             <file>
                 <name>$PROJ_DIR$\..\Drivers\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_uart_ex.c</name>
+            </file>
+        </group>
+        <group>
+            <name>UART</name>
+            <file>
+                <name>$PROJ_DIR$\..\Drivers\UART\GN_uart.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\Drivers\UART\GN_uart_IT_callback.c</name>
             </file>
         </group>
     </group>
