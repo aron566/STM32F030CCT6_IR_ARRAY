@@ -10,58 +10,67 @@
 #ifndef MODBUS_REG_H_
 #define MODBUS_REG_H_
 
-#ifdef __cplusplus //Ê¹ÓÃ£ã±àÒë
+#ifdef __cplusplus //ä½¿ç”¨ï½ƒç¼–è¯‘
 extern "C" {
 #endif
-#include "modbus_port.h" /*Íâ²¿·½·¨*/
-    
-/*****************************ÊµÊ±Êı¾İ********************************/
-#define REAL_TIME_TEMP			    0x0101U//ÊµÊ±ÎÂ¶È ÎÂ¶ÈÖµ*100 µ¥Î»ÉãÊÏ¶È
-#define IR_MATRIX_GRAPH_START       0xF000U//ºìÍâÍ¼ÏñÏñËØÊı¾İ 0xf3ff 1024¸ö
-#define IR_MATRIX_GRAPH_END         0xF3FFU//ºìÍâÍ¼ÏñÏñËØÊı¾İ
-                          /*±¾»úÌá¹©Êı¾İ*/
-#define PEOPLE_NUM_HOUR             0x0110U//µ±Ğ¡Ê±ÄÚÈËÁ÷Á¿
-#define PEOPLE_NUM_DAY              0x0111U//µ±ÌìµÄÈËÁ÷Á¿
-#define PEOPLE_NUM_WEEK             0x0112U//µ±ÖÜÈËÁ÷Á¿
-#define PEOPLE_NUM_MONTH            0x0113U//µ±ÔÂÈËÁ÷Á¿
-/***************************±¨¾¯ÊÂ¼ş×´Ì¬******************************/
-#define MAX_RECORD_NUM              0xE000U//×î´ó¼ÇÂ¼Êı
-#define CURRENT_RECORD_NUM_H        0xE001U//×îĞÂ¼ÇÂ¼±àºÅ
-#define CURRENT_RECORD_NUM_L        0xE002U//×îĞÂ¼ÇÂ¼±àºÅ
-#define FIRST_RECORD_NUM_H          0xE003U//×îÔç¼ÇÂ¼±àºÅ
-#define FIRST_RECORD_NUM_L          0xE004U//×îÔç¼ÇÂ¼±àºÅ
-/***************************±¨¾¯ÊÂ¼şÄÚÈİ******************************/
-#define SET_ALARM_NUM_H             0xE010U//¼´½«¶ÁÈ¡µÄÊÂ¼ş±àºÅ
-#define SET_ALARM_NUM_L             0xE011U//¼´½«¶ÁÈ¡µÄÊÂ¼ş±àºÅ
-#define ALARM_DEV_NUM               0xE012U//±¨¾¯µÄÉè±¸±àºÅ ¼¸ºÅºìÍâ
-#define ALARM_CURRENT_TEMP          0xE013U//±¨¾¯Ê±µÄÎÂ¶È
-#define READ_ALARM_TEMP_SET         0xE014U//¶ÁÈ¡±¨¾¯Ê±µÄÎÂ¶ÈÉè¶¨
-#define READ_ALARM_TIME_S_H         0xE015U//¶ÁÈ¡±¨¾¯³ÖĞøÊÂ¼ä
-#define READ_ALARM_TIME_S_L         0xE016U//¶ÁÈ¡±¨¾¯³ÖĞøÊÂ¼ä
-/***************************¿ØÖÆÃüÁî******************************/
-#define COMMAND_CONTROL             0xC000U//Ğ´1Çå³ıµ±ÌìÍ³¼ÆÈËÊı
-/***************************ÅäÖÃ²ÎÊı******************************/
-#define SET_ALARM_LOW_TEMP          0x2001U//ÉèÖÃµÍÎÂ±¨¾¯Öµ Êµ¼ÊÎÂ¶È*100  
-#define SET_ALARM_HI_TEMP           0x2002U//ÉèÖÃ¸ßÎÂ±¨¾¯Öµ Êµ¼ÊÎÂ¶È*100
-#define SET_ALARM_LOW_TEMP_TIME_H   0x2003U//ÉèÖÃµÍÎÂ±¨¾¯Ê±³¤
-#define SET_ALARM_LOW_TEMP_TIME_L   0x2004U//ÉèÖÃµÍÎÂ±¨¾¯Ê±³¤
-#define SET_ALARM_HI_TEMP_TIME_H    0x2005U//ÉèÖÃ¸ßÎÂ±¨¾¯Ê±³¤
-#define SET_ALARM_HI_TEMP_TIME_L    0x2006U//ÉèÖÃ¸ßÎÂ±¨¾¯Ê±³¤
-#define SET_ALARM_LOW_TEMP_DELAY    0x2007U//ÉèÖÃµÍÎÂ±¨¾¯ ÑÓÊ±±¨¾¯Ê±¼ä
-#define SET_ALARM_HI_TEMP_DELAY     0x2008U//ÉèÖÃ¸ßÎÂ±¨¾¯ ÑÓÊ±±¨¾¯Ê±¼ä
-#define SET_SWITCH_ENDPOINT         0x2009U//ÉèÖÃÇĞ»»ÉÏ´«---PC¶Ë¿Ú
+#include "modbus_port.h" /*å¤–éƒ¨æ–¹æ³•*/
+#include "modbus_type.h"    
+/*****************************å®æ—¶æ•°æ®********************************/
+#define REAL_TIME_TEMP	            0x0101U//å®æ—¶æ¸©åº¦ æ¸©åº¦å€¼*100 å•ä½æ‘„æ°åº¦
+#define IR_MATRIX_GRAPH_START       0xF000U//çº¢å¤–å›¾åƒåƒç´ æ•°æ® 0xf3ff 1024ä¸ª
+#define IR_MATRIX_GRAPH_END         0xF3FFU//çº¢å¤–å›¾åƒåƒç´ æ•°æ®
+#define READ_IR_MATRIX_GRAPH_X      0x0102U//çº¢å¤–å›¾åƒ æ£€æµ‹ç‚¹ è¡Œ
+#define READ_IR_MATRIX_GRAPH_Y      0x0103U//çº¢å¤–å›¾åƒ æ£€æµ‹ç‚¹ åˆ—  
+                          /*æœ¬æœºæä¾›æ•°æ®*/
+#define PEOPLE_NUM_HOUR             0x0110U//å½“å°æ—¶å†…äººæµé‡
+#define PEOPLE_NUM_DAY              0x0111U//å½“å¤©çš„äººæµé‡
+#define PEOPLE_NUM_WEEK             0x0112U//å½“å‘¨äººæµé‡
+#define PEOPLE_NUM_MONTH            0x0113U//å½“æœˆäººæµé‡
+/***************************æŠ¥è­¦äº‹ä»¶çŠ¶æ€******************************/
+#define MAX_RECORD_NUM              0xE000U//æœ€å¤§è®°å½•æ•°
+#define CURRENT_RECORD_NUM_H        0xE001U//æœ€æ–°è®°å½•ç¼–å·
+#define CURRENT_RECORD_NUM_L        0xE002U//æœ€æ–°è®°å½•ç¼–å·
+#define FIRST_RECORD_NUM_H          0xE003U//æœ€æ—©è®°å½•ç¼–å·
+#define FIRST_RECORD_NUM_L          0xE004U//æœ€æ—©è®°å½•ç¼–å·
+/***************************æŠ¥è­¦äº‹ä»¶å†…å®¹******************************/
+#define SET_ALARM_NUM_H             0xE010U//å³å°†è¯»å–çš„äº‹ä»¶ç¼–å·
+#define SET_ALARM_NUM_L             0xE011U//å³å°†è¯»å–çš„äº‹ä»¶ç¼–å·
+#define ALARM_DEV_NUM               0xE012U//æŠ¥è­¦çš„è®¾å¤‡ç¼–å· å‡ å·çº¢å¤–
+#define ALARM_CURRENT_TEMP          0xE013U//æŠ¥è­¦æ—¶çš„æ¸©åº¦
+#define READ_ALARM_TEMP_SET         0xE014U//è¯»å–æŠ¥è­¦æ—¶çš„æ¸©åº¦è®¾å®š
+#define READ_ALARM_TIME_S_H         0xE015U//è¯»å–æŠ¥è­¦æŒç»­æ—¶é—´
+#define READ_ALARM_TIME_S_L         0xE016U//è¯»å–æŠ¥è­¦æŒç»­æ—¶é—´
+/***************************æ§åˆ¶å‘½ä»¤******************************/
+#define COMMAND_CONTROL             0xC000U//å†™1æ¸…é™¤å½“å¤©ç»Ÿè®¡äººæ•°
+/***************************é…ç½®å‚æ•°******************************/
+#define SET_ALARM_HI_TEMP           0x2001U//è®¾ç½®é«˜æ¸©æŠ¥è­¦å€¼ å®é™…æ¸©åº¦*100  
+#define SET_ALARM_LOW_TEMP          0x2002U//è®¾ç½®ä½æ¸©æŠ¥è­¦å€¼ å®é™…æ¸©åº¦*100
+#define SET_ALARM_LOW_TEMP_TIME_H   0x2003U//è®¾ç½®ä½æ¸©æŠ¥è­¦æ—¶é•¿
+#define SET_ALARM_LOW_TEMP_TIME_L   0x2004U//è®¾ç½®ä½æ¸©æŠ¥è­¦æ—¶é•¿
+#define SET_ALARM_HI_TEMP_TIME_H    0x2005U//è®¾ç½®é«˜æ¸©æŠ¥è­¦æ—¶é•¿
+#define SET_ALARM_HI_TEMP_TIME_L    0x2006U//è®¾ç½®é«˜æ¸©æŠ¥è­¦æ—¶é•¿
+#define SET_ALARM_LOW_TEMP_DELAY    0x2007U//è®¾ç½®ä½æ¸©æŠ¥è­¦ å»¶æ—¶æŠ¥è­¦æ—¶é—´
+#define SET_ALARM_HI_TEMP_DELAY     0x2008U//è®¾ç½®é«˜æ¸©æŠ¥è­¦ å»¶æ—¶æŠ¥è­¦æ—¶é—´
+#define SET_SWITCH_ENDPOINT         0x2009U//è®¾ç½®åˆ‡æ¢ä¸Šä¼ ---PCç«¯å£
               
-#define SET_MODBUS_ID               0x2010U//ÉèÖÃmodbusid Êı¾İ¿ØÖÆµ¥ÔªÎª0 ²»¿É¸ü¸Ä
-#define SET_BAUD_RATE_H             0x2011U//ÉèÖÃÍ¨Ñ¶²¨ÌØÂÊ
-#define SET_BAUD_RATE_L             0x2012U//ÉèÖÃÍ¨Ñ¶²¨ÌØÂÊµÍ×Ö½Ú 
-#define SET_RELAY_TOGGLE_TYPE       0x2013U//ÉèÖÃ¼ÌµçÆ÷´¥·¢·½Ê½ µçÆ½ Âö³å
-#define SET_ALARM_AFFIRM_TYPE       0x2014U//ÉèÖÃ±¨¾¯È·ÈÏ·½Ê½ ×Ô¶¯ »òÕß ÊÖ¶¯°´Å¥
-#define SET_SYS_TIME_H              0x201EU//1970Äêµ½µ±Ç°Ê±¼äµÄÃëÊı
+#define SET_MODBUS_ID               0x2010U//è®¾ç½®modbusid æ•°æ®æ§åˆ¶å•å…ƒä¸º0 ä¸å¯æ›´æ”¹
+#define SET_BAUD_RATE_H             0x2011U//è®¾ç½®é€šè®¯æ³¢ç‰¹ç‡
+#define SET_BAUD_RATE_L             0x2012U//è®¾ç½®é€šè®¯æ³¢ç‰¹ç‡ä½å­—èŠ‚ 
+#define SET_RELAY_TOGGLE_TYPE       0x2013U//è®¾ç½®ç»§ç”µå™¨è§¦å‘æ–¹å¼ ç”µå¹³ è„‰å†²
+#define SET_ALARM_AFFIRM_TYPE       0x2014U//è®¾ç½®æŠ¥è­¦ç¡®è®¤æ–¹å¼ è‡ªåŠ¨ æˆ–è€… æ‰‹åŠ¨æŒ‰é’®
+#define SET_SYS_TIME_H              0x201EU//1970å¹´åˆ°å½“å‰æ—¶é—´çš„ç§’æ•°
 #define SET_SYS_TIME_L              0x201FU//
-                  
+
+/***************************é…ç½®æ•°ç ç®¡å‚æ•°******************************/
+#define SET_DISPLAY_FLOAT           0x0133U//è®¾ç½®æ˜¾ç¤ºæµ®ç‚¹æ•° 0ä¸å¯ç”¨æµ®ç‚¹ å…¶ä»–å€¼ï¼š0.1çš„æŒ‡æ•°
+#define SET_DISPLAY_NUM0            0x0134U//è®¾ç½®5ä½æ•°ç ç®¡ æ˜¾ç¤º16ä½æ•´æ•°  æ˜¾ç¤º = å€¼*ï¼ˆ0.1^0x0133çš„å€¼ï¼‰
+#define SET_DISPLAY_NUM1            0x008DU//è®¾ç½®æ•°ç ç®¡1   çº¢è‰²æŒ‡ç¤º
+#define SET_DISPLAY_NUM2            0x008EU//è®¾ç½®æ•°ç ç®¡2   é»„è‰²æŒ‡ç¤º
+#define SET_DISPLAY_NUM3            0x008FU//è®¾ç½®æ•°ç ç®¡3   ç»¿è‰²æŒ‡ç¤º
+
 typedef struct 
 {
-    //±¾»úÌá¹©²ÎÊı-->
+    //æœ¬æœºæä¾›å‚æ•°-->
     uint16_t people_cnt_hour_val;
     uint16_t people_cnt_day_val;
     uint16_t people_cnt_week_val;
@@ -74,9 +83,16 @@ typedef struct
     uint16_t alarm_dev_num_val;   
     uint16_t alarm_current_tmp_val;
     uint16_t alarm_current_tmp_set_val[UART_NUM_MAX];
-    uint16_t alarm_time_cnt_H_val;//±¨¾¯³ÖĞøÊ±¼ä
+    uint16_t alarm_time_cnt_H_val;//æŠ¥è­¦æŒç»­æ—¶é—´
     uint16_t alarm_time_cnt_L_val;
-    /*Ïà¹ØÉèÖÃ*/
+    /*ç›¸å…³è®¾ç½®*/
+    uint16_t set_alarm_hi_tmp_time_H;
+    uint16_t set_alarm_hi_tmp_time_L;
+    uint16_t set_alarm_low_tmp_time_H;
+    uint16_t set_alarm_low_tmp_time_L;
+    
+    uint16_t set_relay_toggle_type;
+    uint16_t set_alarm_affirm_type;
     uint16_t set_event_num_H_val;
     uint16_t set_event_num_L_val;   
     uint16_t command_val;
@@ -87,30 +103,38 @@ typedef struct
     uint16_t baud_rate_L_val;
     uint16_t sys_time_s_H_val;
     uint16_t sys_time_s_L_val;
-    //ºìÍâÉè±¸ Ìá¹©--->
-    uint16_t real_time_tmp[UART_NUM_MAX];
-    uint16_t ir_graph[256];//¹²ÓÃ
+    
+    uint16_t set_dispaly_float_func;
+    uint16_t set_dispaly_val;
+    uint16_t set_dispaly_red_light_state;
+    uint16_t set_dispaly_yellow_light_state;
+    uint16_t set_dispaly_green_light_state;
+    //çº¢å¤–è®¾å¤‡ æä¾›--->
+    uint16_t real_time_tmp[REAL_TIME_TMP_BUFF_MAX];
+    uint16_t ir_graph[1024+100];//å…±ç”¨
+    uint16_t ir_graph_tmp_point_x;
+    uint16_t ir_graph_tmp_point_y;
 }device_reg_info_t;
 
 
-/*²éÕÒË÷Òı*/
+/*æŸ¥æ‰¾ç´¢å¼•*/
 int SlaveCheck_Modbus_Addr(uint16_t Reg_start_addr);
 int MasterCheck_Modbus_Addr(uint16_t Reg_start_addr);
-/*¼Ä´æÆ÷´¦ÀíÓ³Éä*/
+/*å¯„å­˜å™¨å¤„ç†æ˜ å°„*/
 extern modbus_process_t MasteReg_process_map[];
 extern modbus_process_t SlaveReg_process_map[];
 
-/*¼Ä´æÆ÷ ¶ÔÓ¦ ÊıÖµ´æ´¢ÇøÓò*/
+/*å¯„å­˜å™¨ å¯¹åº” æ•°å€¼å­˜å‚¨åŒºåŸŸ*/
 extern device_reg_info_t device_v_info;
 
-/*´æ´¢±¾»úÊı¾İ ÊıÖµ´æ´¢ÇøÓò ²ÉÓÃÒ»Î¬Êı×é*/
+/*å­˜å‚¨æœ¬æœºæ•°æ® æ•°å€¼å­˜å‚¨åŒºåŸŸ é‡‡ç”¨ä¸€ç»´æ•°ç»„*/
 //extern uint8_t device_slave_info[];
 
-/*´æ´¢¶à¸ö´ÓÕ¾Êı¾İ ²ÉÓÃ¶şÎ¬Êı×é ÒÔmodbusID×÷ÎªĞĞºÅ*/
+/*å­˜å‚¨å¤šä¸ªä»ç«™æ•°æ® é‡‡ç”¨äºŒç»´æ•°ç»„ ä»¥modbusIDä½œä¸ºè¡Œå·*/
 //extern uint8_t device_master_info[][256];
 
 
-#ifdef __cplusplus //Ê¹ÓÃ£ã±àÒë
+#ifdef __cplusplus //ä½¿ç”¨ï½ƒç¼–è¯‘
 }
 #endif
 

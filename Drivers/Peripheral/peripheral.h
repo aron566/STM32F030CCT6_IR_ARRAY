@@ -3,7 +3,13 @@
 
 #include <stdint.h>
 #include "GN_uart.h"
-
+/* Relay ----------------------------------------------------------------------*/
+typedef enum{
+    VOLTAGE_MODE = 0,
+    PULSE_MODE
+}RelayMode_t;
+void Relay1_control(RelayMode_t mode ,uint16_t period ,uint16_t percent);
+void Relay2_control(RelayMode_t mode ,uint16_t period ,uint16_t percent);
 /* IWDG ----------------------------------------------------------------------*/
 void IWDG_clr(void);
 
@@ -14,6 +20,11 @@ void sys_get_CPU_ID(uint32_t*pUID);
 void sys_LED_toggle();
 void high_light_LED_on();
 void high_light_LED_off();
+
+void fault_LED_on();/*故障指示灯*/
+void fault_LED_off();
+void normal_LED_on();
+void normal_LED_off();
 void beep1_on();
 void beep1_off();
 void beep2_on();

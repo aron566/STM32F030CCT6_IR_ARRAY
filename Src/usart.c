@@ -523,17 +523,7 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 } 
 
 /* USER CODE BEGIN 1 */
-/*************************************************
-  * 函数功能: 重定向c库函数printf到HAL_UART_Transmit
-  * 输入参数: 无
-  * 返 回 值: 无
-  * 说    明：无
-  */
-int fputc(int ch,FILE *f)
-{
-  HAL_UART_Transmit(&huart5, (uint8_t *)&ch, 1, 10);
-  return ch;
-}
+
 /* USER CODE END 1 */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

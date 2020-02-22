@@ -1223,6 +1223,9 @@
                 <name>$PROJ_DIR$\..\Src\stm32f0xx_it.c</name>
             </file>
             <file>
+                <name>$PROJ_DIR$\..\Src\tim.c</name>
+            </file>
+            <file>
                 <name>$PROJ_DIR$\..\Src\usart.c</name>
             </file>
         </group>
@@ -1239,6 +1242,12 @@
             <name>CircularBUFF</name>
             <file>
                 <name>$PROJ_DIR$\..\Drivers\CircularBUFF\CircularQueue.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\Drivers\CircularBUFF\UART_Port.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\Drivers\CircularBUFF\UART_Port.h</name>
             </file>
         </group>
         <group>
